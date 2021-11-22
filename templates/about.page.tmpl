@@ -5,15 +5,6 @@
             <div class="row">
                 <div class="col">
                     <h1>About</h1>
-                    <h2>Help me</h2>
-                    <p>{{index .StringMap "Test"}}</p>
-                    <p>
-                        {{if ne (index .StringMap "remote_ip") ""}}
-                            Your remote IP address id {{index .StringMap "remote_ip"}}
-                        {{else}}
-                            I don't now you IP. Visit the <a href="/">Home page</a>
-                        {{end}}
-                    </p>
                 </div>
             </div>
     </div>

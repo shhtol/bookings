@@ -1,11 +1,83 @@
 {{template "base" .}}
 
 {{define "content"}}
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <h1>Home</h1>
-            </div>
+    <div id="main-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+      <div class="carousel-indicators">
+        <button
+          type="button"
+          data-bs-target="#main-carousel"
+          data-bs-slide-to="0"
+          class="active"
+          aria-current="true"
+          aria-label="Slide 1"
+        ></button>
+        <button
+          type="button"
+          data-bs-target="#main-carousel"
+          data-bs-slide-to="1"
+          aria-label="Slide 2"
+        ></button>
+        <button
+          type="button"
+          data-bs-target="#main-carousel"
+          data-bs-slide-to="2"
+          aria-label="Slide 3"
+        ></button>
+      </div>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img
+            src="/static/images/woman-laptop.png"
+            class="d-block w-100"
+            alt="Outside house"
+          />
+          <div class="carousel-caption d-none d-md-block">
+            <h5>First slide label</h5>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          </div>
         </div>
+        <div class="carousel-item">
+          <img
+            src="/static/images/outside.png"
+            class="d-block w-100"
+            alt="House front"
+          />
+          <div class="carousel-caption d-none d-md-block">
+            <h5>Second slide label</h5>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <img
+            src="/static/images/tray.png"
+            class="d-block w-100"
+            alt="Cosy home"
+          />
+          <div class="carousel-caption d-none d-md-block">
+            <h5>Third slide label</h5>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <h1 class="text-center mt-3">Welcome to Booking Website</h1>
+          <p class="text-center">
+            Sit ut reprehenderit, ipsa eius reiciendis deleniti ab nostrum
+            voluptatibus sed est cum, commodi et, omnis illum quo non neque in
+            incidunt.
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col text-center">
+          <a href="/search-availability" class="btn btn-secondary"
+            >Make Reservation Now</a
+          >
+        </div>
+      </div>
     </div>
 {{end}}
