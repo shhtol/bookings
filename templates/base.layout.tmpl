@@ -18,11 +18,7 @@
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.1.4/dist/css/datepicker-bs4.min.css"
         />
-        <link
-        rel="stylesheet"
-        type="text/css"
-        href="https://unpkg.com/notie/dist/notie.min.css"
-        />
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
         <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
     </head>
     <body>
@@ -108,7 +104,7 @@
         ></script>
         <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.1.4/dist/js/datepicker-full.min.js"></script>
         <script src="https://unpkg.com/notie"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.5/dist/sweetalert2.min.js"></script>
+        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         {{block "js" .}}
 
@@ -139,39 +135,11 @@
             });
         })();
 
-        document.getElementById("colorButton").addEventListener("click", function () {
-            let html = `
-            <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
-                <div class="form-row">
-                    <div class="col">
-                        <div class="form-row" id="reservation-dates-modal">
-                            <div class="col">
-                                <input disabled required class="form-control" type="text" name="start" id="start" placeholder="Arrival">
-                            </div>
-                            <div class="col">
-                                <input disabled required class="form-control" type="text" name="end" id="end" placeholder="Departure">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-            `;
-            attention.custom({
-                title: 'Choose your dates',
-                msg: html,
-            });
-        })
-
-        const elem = document.getElementById("reservation-dates");
-        const rangepicker = new DateRangePicker(elem, {
-            format: "yyyy-mm-dd",
-        });
-
         function notify(msg, msgType) {
             notie.alert({
-            type: "msgType",
-            text: msg,
-            });
+                type: msgType,
+                text: msg,
+            })
         }
 
         function notifyModal(title, text, html, confirmButtonText) {
@@ -182,6 +150,18 @@
             confirmButtonText: confirmButtonText,
             });
         }
+
+        {{with .Error}}
+        notify("{{.}}", "error")
+        {{end}}
+
+        {{with .Flash}}
+        notify("{{.}}", "success")
+        {{end}}
+
+        {{with .Warning}}
+        notify("{{.}}", "warning")
+        {{end}}
 
         function Prompt() {
             let toast = function (c) {
@@ -225,45 +205,57 @@
             };
 
             async function custom(c) {
-            const { msg = "", title = "" } = c;
+        const {
+            icon = "",
+            msg = "",
+            title = "",
+            showConfirmButton = true,
+        } = c;
 
-            const { value: formValues } = await Swal.fire({
-                    title: title,
-                    html: msg,
-                    backdrop: true,
-                    focusConfirm: false,
-                    showCancelButton: true,
-                    willOpen: () => {
-                        const elem = document.getElementById("reservation-dates-modal");
-                        const rp = new DateRangePicker(elem, {
-                            format: 'yyyy-mm-dd',
-                            showOnFocus: true,
-                        })
-                    },
-                    didOpen: () => {
-                        document.getElementById("start").removeAttribute("disabled");
-                        document.getElementById("end").removeAttribute("disabled");
-                    },
-                    preConfirm: () => {
-                        return [
-                            document.getElementById('start').value,
-                            document.getElementById('end').value
-                        ]
-                    }
-                })
-
-                if (formValues) {
-                    Swal.fire(JSON.stringify(formValues))
+        const {value: result} = await Swal.fire({
+            icon: icon,
+            title: title,
+            html: msg,
+            backdrop: false,
+            focusConfirm: false,
+            showCancelButton: true,
+            showConfirmButton: showConfirmButton,
+            willOpen: () => {
+                if (c.willOpen !== undefined) {
+                    c.willOpen();
+                }
+            },
+            didOpen: () => {
+                if (c.didOpen !== undefined) {
+                    c.didOpen();
                 }
             }
+        })
+
+        if (result) {
+            if (result.dismiss !== Swal.DismissReason.cancel) {
+                if (result.value !== "") {
+                    if (c.callback !== undefined) {
+                        c.callback(result);
+                    }
+                } else {
+                    c.callback(false);
+                }
+            } else {
+                c.callback(false);
+            }
+        }
+    }
 
             return {
             toast: toast,
             success: success,
             error: error,
-            custom: custom
+            custom: custom,
             };
         }
+
+        
         </script>
     </body>
     </html>
