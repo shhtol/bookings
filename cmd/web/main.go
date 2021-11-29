@@ -16,7 +16,7 @@ import (
 	"github.com/shhtol/bookings/internal/render"
 )
 
-const portNumber = ":8080"
+const portNumber = ":8000"
 
 var app config.AppConfig
 var session *scs.SessionManager
