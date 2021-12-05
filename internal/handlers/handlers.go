@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	// "strings"
+	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/shhtol/bookings/internal/config"
 	"github.com/shhtol/bookings/internal/driver"
 	"github.com/shhtol/bookings/internal/forms"
@@ -34,6 +33,14 @@ func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
 	}
 }
 
+// NewTestRepo creates a new repository
+func NewTestRepo(a *config.AppConfig) *Repository {
+	return &Repository{
+		App: a,
+		DB:  dbrepo.NewTestingsRepo(a),
+	}
+}
+
 // NewHandlers sets the repo for the handlers
 func NewHandlers(r *Repository) {
 	Repo = r
@@ -53,15 +60,15 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
-		// m.App.Session.Put(r.Context(), "error", "can't get reservation from session")
-		// http.Redirect(w, r, "/", http.StatusSeeOther)
+		m.App.Session.Put(r.Context(), "error", "can't get reservation from session")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
 	room, err := m.DB.GetRoomByID(res.RoomID)
 	if err != nil {
-		// m.App.Session.Put(r.Context(), "error", "can't find room!")
-		// http.Redirect(w, r, "/", http.StatusSeeOther)
+		m.App.Session.Put(r.Context(), "error", "can't find room!")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -278,19 +285,19 @@ type jsonResponse struct {
 //
 func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 	// need to parse request body
-	// err := r.ParseForm()
-	// if err != nil {
+	err := r.ParseForm()
+	if err != nil {
 		// can't parse form, so return appropriate json
-		// resp := jsonResponse{
-		// 	OK:      false,
-		// 	Message: "Internal server error",
-		// }
+		resp := jsonResponse{
+			OK:      false,
+			Message: "Internal server error",
+		}
 
-	// 	out, _ := json.MarshalIndent(resp, "", "     ")
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	w.Write(out)
-	// 	return
-	// }
+		out, _ := json.MarshalIndent(resp, "", "     ")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(out)
+		return
+	}
 
 	sd := r.Form.Get("start")
 	ed := r.Form.Get("end")
@@ -302,18 +309,18 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 	roomID, _ := strconv.Atoi(r.Form.Get("room_id"))
 
 	available, _ := m.DB.SearchAvailabilityByDatesByRoomID(startDate, endDate, roomID)
-	// if err != nil {
-	// 	// got a database error, so return appropriate json
-	// 	resp := jsonResponse{
-	// 		OK:      false,
-	// 		Message: "Error querying database",
-	// 	}
+	if err != nil {
+		// got a database error, so return appropriate json
+		resp := jsonResponse{
+			OK:      false,
+			Message: "Error querying database",
+		}
 
-	// 	out, _ := json.MarshalIndent(resp, "", "     ")
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	w.Write(out)
-	// 	return
-	// }
+		out, _ := json.MarshalIndent(resp, "", "     ")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(out)
+		return
+	}
 	resp := jsonResponse{
 		OK:        available,
 		Message:   "",
@@ -322,8 +329,6 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 		RoomID:    strconv.Itoa(roomID),
 	}
 
-	// I removed the error check, since we handle all aspects of
-	// the json right here
 	out, _ := json.MarshalIndent(resp, "", "     ")
 
 	w.Header().Set("Content-Type", "application/json")
@@ -363,18 +368,18 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 // ChooseRoom displays list of available rooms
 func (m *Repository) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 	// split the URL up by /, and grab the 3rd element
-	// exploded := strings.Split(r.RequestURI, "/")
-	roomID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	exploded := strings.Split(r.RequestURI, "/")
+	roomID, err := strconv.Atoi(exploded[2])
 	if err != nil {
-		// m.App.Session.Put(r.Context(), "error", "missing url parameter")
-		// http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
+	m.App.Session.Put(r.Context(), "error", "missing url parameter")
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	return
 	}
 
 	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
-		// m.App.Session.Put(r.Context(), "error", "Can't get reservation from session")
-		// http.Redirect(w, r, "/", http.StatusSeeOther)
+		m.App.Session.Put(r.Context(), "error", "Can't get reservation from session")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 

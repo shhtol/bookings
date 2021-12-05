@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"testing"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -26,15 +27,20 @@ var functions = template.FuncMap{}
 var infoLog *log.Logger
 var errorLog *log.Logger
 
-func getRoutes() http.Handler {
+func TestMain(m *testing.M) {
 	gob.Register(models.Reservation{})
-	//change this to true in production
+	// gob.Register(models.User{})
+	// gob.Register(models.Room{})
+	// gob.Register(models.Restriction{})
+	// gob.Register(map[string]int{})
+
+	// change this to true when in production
 	app.InProduction = false
 
-	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	app.InfoLog = infoLog
 
-	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.ErrorLog = errorLog
 
 	session = scs.New()
@@ -45,18 +51,29 @@ func getRoutes() http.Handler {
 
 	app.Session = session
 
+	// mailChan := make(chan models.MailData)
+	// app.MailChan = mailChan
+	// defer close(mailChan)
+
+	// listenForMail()
+
 	tc, err := CreateTestTemplateCache()
 	if err != nil {
-		log.Fatal("Can't create template cache")
+		log.Fatal("cannot create template cache")
 	}
 
 	app.TemplateCache = tc
 	app.UseCache = true
 
-	repo := NewRepo(&app)
+	repo := NewTestRepo(&app)
 	NewHandlers(repo)
-
 	render.NewRenderer(&app)
+
+	os.Exit(m.Run())
+}
+
+
+func getRoutes() http.Handler {
 
 	mux := chi.NewRouter()
 
