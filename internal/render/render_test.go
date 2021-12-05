@@ -41,14 +41,14 @@ func TestRenderTemplate(t *testing.T) {
 
 	var ww myWriter
 
-	err = RenderTemplate(&ww, r, "home.page.tmpl", &models.TemplateData{})
+	err = Template(&ww, r, "home.page.tmpl", &models.TemplateData{})
 
 	if err != nil {
 		t.Error(err)
 		t.Error("error writing template to browser")
 	}
 
-	err = RenderTemplate(&ww, r, "non-existent.page.tmpl", &models.TemplateData{})
+	err = Template(&ww, r, "non-existent.page.tmpl", &models.TemplateData{})
 	if err == nil {
 		t.Error("rendered template that does not exist")
 	}
